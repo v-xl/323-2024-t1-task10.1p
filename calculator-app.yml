@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calc-deployment
+  labels:
+    app: calc
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: calc
+  template:
+    metadata:
+      labels:
+        app: calc
+    spec:
+      nodeSelector:
+        iam.gke.io/gke-metadata-server-enabled: "true"
+      containers:
+      - name: calc
+        image: v3xl/calculator:latest
+        env:
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: mongo-creds
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: mongo-creds
+        - name: DB_HOST
+          value: calc-db-service
+        - name: DB_PORT
+          value: "27017"
+        ports:
+        - containerPort: 3000
